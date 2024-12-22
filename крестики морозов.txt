@@ -1,0 +1,112 @@
+import random
+from itertools import permutations
+import os
+
+
+class Play:
+    def __init__(self):
+        self.board = [4, 9, 2,
+                      3, 5, 7,
+                      8, 1, 6]
+        self.computer = set()
+        self.player = set()
+        self.condition = 'play'
+        self.turn_order = random.choice(('player', 'computer'))
+        self.player_symbol = random.choice((' X ', ' O '))
+        self.computer_symbol = ' X ' if self.player_symbol == ' O ' else ' O '
+
+    def new_game(self):
+        self.computer = set()
+        self.player = set()
+        self.condition = 'play'
+        self.turn_order = random.choice(('player', 'computer'))
+        self.player_symbol = random.choice((' X ', ' O '))
+        self.computer_symbol = ' X ' if self.player_symbol == ' O ' else ' O '
+
+    def make_move(self):
+        if self.turn_order == 'computer':
+            number = random.choice(list(set(self.board) - self.player - self.computer))
+            self.computer.add(number)
+            self.turn_order = 'player'
+            print('Xод компьютера: позиция', self.board.index(number)+1)
+        elif self.turn_order == 'player':
+            self.view_board()
+            print('Ваш ход:')
+            number = int(input('Введите свободную позицию [1..9]:')) - 1
+            if number in range(9) and self.board[number] not in self.computer and self.board[number] not in self.player:
+                self.player.add(self.board[number])
+                self.turn_order = 'computer'
+            else:
+                print('Выбрана некорректная позиция повторите ввод')
+        self.check_condition()
+
+    def check_condition(self):
+        for triad in permutations(list(self.computer), 3):
+            if sum(triad) == 15:
+                self.condition = 'comp_win'
+                return
+        for triad in permutations(list(self.player), 3):
+            if sum(triad) == 15:
+                self.condition = 'player_win'
+                return
+        if len(self.computer) + len(self.player) == 9:
+            self.condition = 'draw'
+
+    def view_board(self):
+        row = [self.player_symbol if el in self.player else self.computer_symbol if el in self.computer else '   '
+               for el in self.board[:3]]
+        print(*row, sep='|')
+        print('---|---|---')
+        row = [self.player_symbol if el in self.player else self.computer_symbol if el in self.computer else '   '
+               for el in self.board[3:6]]
+        print(*row, sep='|')
+        print('---|---|---')
+        row = [self.player_symbol if el in self.player else self.computer_symbol if el in self.computer else '   '
+               for el in self.board[6:]]
+        print(*row, sep='|')
+
+    def play_start(self):
+        print('Начало игры.')
+        if self.turn_order == 'player':
+            print('Начинает игру игрок')
+        else:
+            print('Начинает игру компьютер')
+        print('Игрок играет :', self.player_symbol)
+        print('Компьютер  играет :', self.computer_symbol)
+        while self.condition == 'play':
+            self.make_move()
+        print('Игра завершена:')
+        self.view_board()
+        if self.condition == 'draw':
+            result = 'Ничья'
+        elif self.condition == 'player_win':
+            result = 'Победа игрока'
+        elif self.condition == 'comp_win':
+            result = 'Победа компьютера'
+        print('Результат игры:', result)
+
+def main():
+    print('''
+ Данная программа реализует игру крестики-нолики.
+ Цель игры состоит в построении линии из трех одинаковых элементов.
+ На игровом поле вида:
+  1 | 2 | 3
+  --|---|---
+  4 | 5 | 6
+  --|---|---
+  7 | 8 | 9
+ Где цифрами обозначено расположение позиции символа
+ ''')
+    game = Play()
+    game.play_start()
+    print('Хотите продолжить игру : Y/N')
+    cs = input('')
+    if cs == 'Y':
+        os.system('cls')
+        game.new_game()
+        game.play_start()
+
+
+if __name__ == '__main__':
+    main()
+
